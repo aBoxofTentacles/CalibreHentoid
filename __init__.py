@@ -1,3 +1,21 @@
+# This file is part of CalibreHentoid
+
+# CalibreHentoid is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# CalibreHentoid is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+__license__ = 'GPL v3'
+__copyright__ = '2021, aBoxofTentacles <gmoney@aboxoftentacles.com>'
+__docformat__ = 'restructuredtext en'
 
 import json
 import zipfile
@@ -5,15 +23,15 @@ import zipfile
 from calibre.customize import MetadataReaderPlugin
 
 class Hentalibre(MetadataReaderPlugin):    
-    name = 'Hentalibre'
-    description = 'import metadata from hentoid json files'
+    name = 'CalibreHentoid'
+    description = 'Read metadata from hentoid JSON stored in CBZ files'
     supported_platforms = ['linux']
     author = 'aBoxofTentacles'
     version = (0,1,0)
     file_types = set(['cbz'])
     minimum_calibre_version = (0,7,53)
     def clean_tag(self, tag):
-        #get rid of or change some unwanted tags
+        #change some unwanted tags
         #cut out e-hentai gender specifications
         colon_index = tag.find(':')
         print(colon_index)
