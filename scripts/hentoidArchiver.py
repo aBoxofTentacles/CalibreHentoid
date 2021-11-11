@@ -20,6 +20,14 @@
 import os, re, sys, getopt
 from zipfile import ZipFile
 
+def simplify_path(full_path):
+    print(full_path.path)
+    path_array = full_path.path.split('/')
+    if len(path_array) < 2: #catch windows file seperators
+        path_array = full_path.path.split('\\')
+    return os.path.join(path_array [-3], path_array[-2], path_array[-1])
+    
+
 
 HELP_TEXT = """hentoidArchiver.py for zipping up all of your hentoid downloads
 -----------------------------------------------------------------------------
@@ -63,7 +71,7 @@ for source in os.scandir(rootDir):
                 print('found ' + str(book))
             with ZipFile(os.path.join(outDir, book.name + '.cbz'), 'w') as comicZip:
                 for page in os.scandir(book):
-                    comicZip.write(page)
+                    comicZip.write(page, arcname=simplify_path(page))
                 comicZip.close
                 if verbose:
                     print(str(book) + ' zipped')
