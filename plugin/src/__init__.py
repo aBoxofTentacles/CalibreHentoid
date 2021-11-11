@@ -23,7 +23,7 @@ import zipfile
 from calibre.customize import MetadataReaderPlugin
 
 class Hentalibre(MetadataReaderPlugin):    
-    name = 'CalibreHentoid'
+    name = 'Read Hentoid Metadata'
     description = 'Read metadata from hentoid JSON stored in CBZ files'
     supported_platforms = ['linux']
     author = 'aBoxofTentacles'

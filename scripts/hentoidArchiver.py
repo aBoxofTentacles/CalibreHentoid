@@ -21,7 +21,6 @@ import os, re, sys, getopt
 from zipfile import ZipFile
 
 def simplify_path(full_path):
-    print(full_path.path)
     path_array = full_path.path.split('/')
     if len(path_array) < 2: #catch windows file seperators
         path_array = full_path.path.split('\\')
@@ -41,7 +40,7 @@ Options
 -v, --verbose:      Verbose mode
 """
 
-#instance variables
+#variables
 rootDir = "."
 outDir = "."
 verbose = False
