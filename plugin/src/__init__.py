@@ -31,28 +31,25 @@ class Hentalibre(MetadataReaderPlugin):
     file_types = set(['cbz'])
     minimum_calibre_version = (0,7,53)
 
-    def clean_tag(tag):
+    def clean_tag(self, tag):
         #change some unwanted tags
         #cut out e-hentai gender specifications
         colon_index = tag.find(':')
-        print(colon_index)
         if colon_index > 0 and colon_index < (len(tag) - 1):
-            print('if triggered')
             return tag[(colon_index + 1):]
 
         return tag
 
-    def not_blacklisted(tag):
+    def not_blacklisted(self, tag):
         #detect black listed items
         blacklist = ['group:']
         
         for i in blacklist:
-            if tag.find(i):
+            if tag.find(i) != -1:
                 return False
-        
         return True
 
-    def default_language(json_file):
+    def default_language(self, json_file):
         site_name = json_file['site']
         
         if site_name == 'TSUMINO':
@@ -82,8 +79,7 @@ class Hentalibre(MetadataReaderPlugin):
                             for author in book_json['attributes']['ARTIST']:
                                 mi.authors.append(author['name'])
                         if 'SERIE' in book_json['attributes']:
-                            for series in book_json['attributes']['SERIE']:
-                                mi.series.append(series['name'])
+                            mi.series = book_json['attributes']['SERIE'][0]['name']
                         if 'LANGUAGE' in book_json['attributes']:
                             for language in book_json['attributes']['LANGUAGE']:
                                 mi.languages.append(language['name'])
