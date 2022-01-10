@@ -25,12 +25,13 @@ from calibre.customize import MetadataReaderPlugin
 class Hentalibre(MetadataReaderPlugin):    
     name = 'Read Hentoid Metadata'
     description = 'Read metadata from hentoid JSON stored in CBZ files'
-    supported_platforms = ['linux']
+    supported_platforms = ['linux', 'windows']
     author = 'aBoxofTentacles'
     version = (0,1,0)
     file_types = set(['cbz'])
     minimum_calibre_version = (0,7,53)
-    def clean_tag(self, tag):
+
+    def clean_tag(tag):
         #change some unwanted tags
         #cut out e-hentai gender specifications
         colon_index = tag.find(':')
@@ -40,52 +41,53 @@ class Hentalibre(MetadataReaderPlugin):
             return tag[(colon_index + 1):]
 
         return tag
+
+    def not_blacklisted(tag):
+        #detect black listed items
+        blacklist = ['group:']
+        
+        for i in blacklist:
+            if tag.find(i):
+                return False
+        
+        return True
+
+    def default_language(json_file):
+        site_name = json_file['site']
+        
+        if site_name == 'TSUMINO':
+            return 'English'
             
     def get_metadata(self, stream, ftype):
         from calibre.customize.builtins import ComicMetadataReader
         book_dict = {}
         #open zip
         with zipfile.ZipFile(stream) as book_archive:
-            for item in book_archive.namelist():
-                if item.endswith('thumb.jpg'):
-                    print('thumbnail found')
-                    cover_image = book_archive.open(item)
-                    break
-
             #find content json
             for item in book_archive.namelist():
                 if item.endswith('contentV2.json'):
-                    content_path = item
-                    print('contentV2.json found')
-            #build a more useable dictionary
-                    with book_archive.open(content_path) as book_file:
+                    with book_archive.open(item) as book_file:
                         book_json = json.load(book_file)
-                        book_dict = {
-                            "title": book_json['title'],
-                            "tags": [],
-                            "authors": [],
-                            "series" : []
-                        }
+                        #call the original cbz metadata reader
+                        mi = ComicMetadataReader.get_metadata(self, stream, 'cbz')
+                        #start pulling metadata
+                        if 'title' in book_json:
+                            mi.title = book_json['title']
                         if 'TAG' in book_json['attributes']:
                             for tag in book_json['attributes']['TAG']:
                                 tag_name = str(tag['name'])
-                                if tag_name.find('group:') == -1:
-                                    book_dict["tags"].append(self.clean_tag(tag_name))
+                                if self.not_blacklisted(tag_name):
+                                    mi.tags.append(self.clean_tag(tag_name))
                         if 'ARTIST' in book_json['attributes']:
                             for author in book_json['attributes']['ARTIST']:
-                                book_dict["authors"].append(author['name'])
+                                mi.authors.append(author['name'])
                         if 'SERIE' in book_json['attributes']:
                             for series in book_json['attributes']['SERIE']:
-                                book_dict["series"].append(series['name'])
-                                print(book_dict)
-                        #call the original cbz metadata reader
-                        mi = ComicMetadataReader.get_metadata(self, stream, 'cbz')
-                        if book_dict['title']:
-                            mi.title = book_dict['title']
-                        if book_dict['tags']:
-                            mi.tags = book_dict['tags']
-                        if book_dict['authors']:
-                            mi.authors = book_dict['authors']
-                        if book_dict['series']:
-                            mi.series = book_dict['series'][0]
+                                mi.series.append(series['name'])
+                        if 'LANGUAGE' in book_json['attributes']:
+                            for language in book_json['attributes']['LANGUAGE']:
+                                mi.languages.append(language['name'])
+                        else:
+                            mi.languages.append(self.default_language(book_json))
+                        
                         return mi
